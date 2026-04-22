@@ -2,6 +2,7 @@ import pandas as pd
 import random
 from sklearn.tree import DecisionTreeClassifier
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 # -------------------------------
 # Step 1: Create Dataset
@@ -25,40 +26,49 @@ model.fit(X, y)
 # -------------------------------
 def dvfs_control(cpu):
     pred = model.predict([[cpu]])[0]
-    
+
     if pred == 'low':
         freq = 1.2
     elif pred == 'medium':
         freq = 2.0
     else:
         freq = 3.0
-    
+
     return pred, freq
 
 # -------------------------------
-# Step 4: Simulation
+# Step 4: Real-Time Graph Setup
 # -------------------------------
 cpu_values = []
 freq_values = []
+x_values = []
 
-print("\n--- DVFS Simulation ---\n")
+fig, ax = plt.subplots()
 
-for i in range(10):
+def update(frame):
     cpu = random.randint(10, 95)
     workload, freq = dvfs_control(cpu)
-    
+
+    x_values.append(frame)
     cpu_values.append(cpu)
     freq_values.append(freq)
-    
-    print(f"CPU Usage: {cpu}% → Workload: {workload} → Frequency: {freq} GHz")
+
+    print(f"CPU Usage: {cpu}% -> Workload: {workload} -> Frequency: {freq} GHz")
+
+    ax.clear()
+
+    ax.plot(x_values, cpu_values, marker='o', label='CPU Usage (%)')
+    ax.plot(x_values, freq_values, marker='s', label='Frequency (GHz)')
+
+    ax.set_title("Real-Time DVFS Monitoring")
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Value")
+    ax.legend()
+    ax.grid(True)
 
 # -------------------------------
-# Step 5: Graph (IMPORTANT)
+# Step 5: Animation
 # -------------------------------
-plt.plot(cpu_values, freq_values, marker='o')
-plt.xlabel("CPU Usage (%)")
-plt.ylabel("CPU Frequency (GHz)")
-plt.title("DVFS: CPU Usage vs Frequency")
-plt.grid()
+ani = FuncAnimation(fig, update, interval=1000)
 
 plt.show()
